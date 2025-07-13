@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Expense Report</title>
+</head>
+<body>
+    <h1>Smart Expense Report</h1>
+    <p><strong>Total:</strong> ₹{{ result.total_spent }}</p>
+    <p><strong>Average:</strong> ₹{{ result.avg_spent }}</p>
+
+    <h3>Monthly Spend</h3>
+    <ul>
+    {% for row in result.monthly_spend %}
+        <li>{{ row.date }}: ₹{{ row.amount }}</li>
+    {% endfor %}
+    </ul>
+
+    {% if result.category_spend %}
+    <h3>Category Spend</h3>
+    <ul>
+    {% for row in result.category_spend %}
+        <li>{{ row.category }}: ₹{{ row.amount }}</li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+</body>
+</html>

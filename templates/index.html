@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Expense Analyzer</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+<div class="container">
+    <h1>📊 Smart Expense Analyzer</h1>
+
+    <p>
+        <a href="/about" style="float: right; font-size: 14px;">About</a>
+        <a href="/contact" style="float: right; font-size: 14px; margin-right: 10px;">Contact</a>
+    </p>
+
+    <div class="tabs">
+        <button class="tab-button active" onclick="showTab('upload-tab')">Upload CSV</button>
+        <button class="tab-button" onclick="showTab('manual-tab')">Manual Entry</button>
+    </div>
+
+    <div id="upload-tab" class="tab-content active">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="upload-box" id="uploadBox">
+                <p id="uploadText">Drag & drop CSV here or click to browse</p>
+                <input type="file" name="file" id="fileInput" accept=".csv">
+            </div>
+            <button type="submit">Analyze</button>
+        </form>
+    </div>
+
+    <div id="manual-tab" class="tab-content">
+        <form method="POST">
+            <input type="hidden" name="manual" value="true">
+            <div id="manual-entries">
+                <div class="manual-row">
+                    <input type="date" name="date">
+                    <input type="number" name="amount" placeholder="Amount">
+                    <input type="text" name="category" placeholder="Category">
+                    <input type="text" name="vendor" placeholder="Vendor">
+                </div>
+            </div>
+            <button type="button" onclick="addManualRow()">+ Add Row</button>
+            <button type="submit">Analyze</button>
+        </form>
+    </div>
+
+    {% if result %}
+        {% if result.error %}
+            <p style="color:red"><strong>Error:</strong> {{ result.error }}</p>
+        {% else %}
+            <div class="results">
+                <h2>Results:</h2>
+                <p><strong>Total Spent:</strong> ₹{{ result.total_spent }}</p>
+                <p><strong>Average Spent:</strong> ₹{{ result.avg_spent }}</p>
+
+                <h3>📅 Monthly Spend (Bar Chart)</h3>
+                <canvas id="monthlyChart" width="600" height="300"></canvas>
+
+                {% if result.category_spend %}
+                    <h3>📁 Category Spend (Pie Chart)</h3>
+                    <canvas id="categoryChart" width="400" height="300"></canvas>
+                {% endif %}
+            </div>
+
+            <form method="POST" action="/download-pdf">
+                <input type="hidden" name="result" value='{{ result | tojson }}'>
+                <button type="submit">📄 Download Report as PDF</button>
+            </form>
+        {% endif %}
+    {% endif %}
+</div>
+
+<script src="/static/script.js"></script>
+
+<!-- Chart Rendering Script -->
+<script>
+    {% if result.monthly_spend %}
+        const monthlyLabels = {{ result.monthly_spend | map(attribute='date') | list | tojson }};
+        const monthlyData = {{ result.monthly_spend | map(attribute='amount') | list | tojson }};
+
+        new Chart(document.getElementById('monthlyChart'), {
+            type: 'bar',
+            data: {
+                labels: monthlyLabels,
+                datasets: [{
+                    label: 'Monthly Spend (₹)',
+                    data: monthlyData,
+                    backgroundColor: '#4e73df',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: 'Monthly Spend Overview'
+                    }
+                }
+            }
+        });
+    {% endif %}
+
+    {% if result.category_spend %}
+        const categoryLabels = {{ result.category_spend | map(attribute='category') | list | tojson }};
+        const categoryData = {{ result.category_spend | map(attribute='amount') | list | tojson }};
+
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'pie',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    label: 'Category Spend',
+                    data: categoryData,
+                    backgroundColor: [
+                        '#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#f472b6'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Category-wise Spend'
+                    }
+                }
+            }
+        });
+    {% endif %}
+</script>
+
+</body>
+</html>
