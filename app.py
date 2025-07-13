@@ -72,21 +72,21 @@ def contact():
         return render_template('contact.html', message_sent=True)
     return render_template('contact.html')
 
-@app.route('/download-pdf', methods=['POST'])
-def download_pdf():
-    import json
+# @app.route('/download-pdf', methods=['POST'])
+# def download_pdf():
+#     import json
 
-    result = request.form['result']
-    parsed_result = convert_numpy(json.loads(result))
+#     result = request.form['result']
+#     parsed_result = convert_numpy(json.loads(result))
 
-    html = render_template('pdf_template.html', result=parsed_result)
+#     html = render_template('pdf_template.html', result=parsed_result)
 
-    config = pdfkit.configuration(wkhtmltopdf=r'C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe')  # Adjust path
-    pdf = pdfkit.from_string(html, False, configuration=config)
+#     config = pdfkit.configuration(wkhtmltopdf=r'C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe')  # Adjust path
+#     pdf = pdfkit.from_string(html, False, configuration=config)
 
-    response = app.response_class(pdf, mimetype='application/pdf')
-    response.headers['Content-Disposition'] = 'attachment; filename=expense_report.pdf'
-    return response
+#     response = app.response_class(pdf, mimetype='application/pdf')
+#     response.headers['Content-Disposition'] = 'attachment; filename=expense_report.pdf'
+#     return response
 
 if __name__ == '__main__':
     app.run(debug=True)
